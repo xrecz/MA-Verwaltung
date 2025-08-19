@@ -1,0 +1,126 @@
+/* Globaler Hintergrund */
+body {
+    margin: 0;
+    height: 100vh;
+    background: url("background.png") no-repeat center center fixed;
+    background-size: cover;
+    font-family: Arial, sans-serif;
+}
+
+/* Sidebar */
+.sidebar {
+    height: 100%;
+    width: 0; /* initial eingeklappt */
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: #111;
+    overflow-x: hidden;
+    transition: 0.3s;
+    padding-top: 60px;
+    z-index: 1;
+}
+
+.sidebar a {
+    padding: 12px 20px;
+    text-decoration: none;
+    font-size: 18px;
+    color: #f1f1f1;
+    display: block;
+    transition: 0.2s;
+}
+
+.sidebar a:hover {
+    background-color: #575757;
+}
+
+.logout-btn {
+    margin: 10px 20px;
+    width: calc(100% - 40px);
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    background: crimson;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.logout-btn:hover {
+    background: darkred;
+}
+
+/* Hauptinhalt */
+#main {
+    transition: margin-left 0.3s;
+    padding: 20px;
+}
+
+.openbtn {
+    font-size: 18px;
+    cursor: pointer;
+    background-color: #0078D7;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 6px;
+}
+
+.openbtn:hover {
+    background-color: #005a9e;
+}
+
+/* Login & Formulare */
+.login-container, .form-container, .kalender-container, .welcome-container {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    width: 400px;
+    margin: 50px auto;
+    text-align: center;
+}
+
+.login-container h2, .form-container h2, .welcome-container h1, .kalender-container h1 {
+    margin-bottom: 20px;
+}
+
+input, button, select {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    outline: none;
+}
+
+button {
+    background: #0078D7;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button:hover {
+    background: #005a9e;
+}
+
+/* Tabellen */
+.kalender-container table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.kalender-container th, .kalender-container td {
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+    text-align: left;
+}
+
+/* Meldungen */
+.message {
+    margin: 10px 0;
+    color: red;
+    font-weight: bold;
+}

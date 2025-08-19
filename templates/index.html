@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Startseite</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="welcome-container">
+        <h1>Willkommen, {{ session['username'] }}!</h1>
+
+        {% if msg %}
+            <p class="message">{{ msg }}</p>
+        {% endif %}
+
+        <p>Du bist jetzt erfolgreich eingeloggt 🎉</p>
+
+        <form method="POST" action="{{ url_for('logout') }}">
+            <button type="submit">Logout</button>
+        </form>
+    </div>
+</body>
+</html>

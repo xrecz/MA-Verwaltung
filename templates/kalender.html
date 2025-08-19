@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Kalender - Geburtstage</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div id="sidebar" class="sidebar">
+        <a href="#" class="closebtn" onclick="toggleSidebar()">×</a>
+        <a href="{{ url_for('login') }}">Startseite</a>
+        <a href="{{ url_for('kalender') }}">Kalender</a>
+        <a href="{{ url_for('mitarbeiter_neu') }}">Neuer Mitarbeiter</a>
+        <a href="#">Passwort ändern</a>
+        <form method="POST" action="{{ url_for('logout') }}">
+            <button type="submit" class="logout-btn">Logout</button>
+        </form>
+    </div>
+
+    <!-- Hauptinhalt -->
+    <div id="main">
+        <button class="openbtn" onclick="toggleSidebar()">☰ Menü</button>
+
+        <div class="kalender-container">
+            <h1>Geburtstagsübersicht 🎂</h1>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Geburtstag</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if birthdays %}
+                        {% for b in birthdays %}
+                        <tr>
+                            <td>{{ b.name }}</td>
+                            <td>{{ b.geburtstag.strftime("%d.%m.") }}</td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="2">Keine Geburtstage gefunden</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Sidebar Script -->
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById("sidebar");
+            const main = document.getElementById("main");
+            if (sidebar.style.width === "250px") {
+                sidebar.style.width = "0";
+                main.style.marginLeft = "0";
+            } else {
+                sidebar.style.width = "250px";
+                main.style.marginLeft = "250px";
+            }
+        }
+    </script>
+</body>
+</html>

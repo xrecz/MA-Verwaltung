@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Übersichtsseite</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div id="sidebar" class="sidebar">
+        <a href="#" class="closebtn" onclick="toggleSidebar()">×</a>
+        <a href="{{ url_for('login') }}">Startseite</a>
+        <a href="{{ url_for('kalender') }}">Kalender</a>
+        <a href="{{ url_for('mitarbeiter') }}">Mitarbeiter-Suche</a>
+        <a href="{{ url_for('mitarbeiter_neu') }}">Neuer Mitarbeiter</a>
+        <a href="#">Passwort ändern</a>
+        <form method="POST" action="{{ url_for('logout') }}">
+            <button type="submit" class="logout-btn">Logout</button>
+        </form>
+    </div>
+
+    <!-- Hauptinhalt -->
+    <div id="main">
+        <button class="openbtn" onclick="toggleSidebar()">☰ Menü</button>
+        <h1>Willkommen, {{ session['username'] }}!</h1>
+        <p>Dies ist die erste Übersichtsseite für Abteilungsleiter.</p>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById("sidebar");
+            const main = document.getElementById("main");
+            if (sidebar.style.width === "250px") {
+                sidebar.style.width = "0";
+                main.style.marginLeft = "0";
+            } else {
+                sidebar.style.width = "250px";
+                main.style.marginLeft = "250px";
+            }
+        }
+    </script>
+</body>
+</html>

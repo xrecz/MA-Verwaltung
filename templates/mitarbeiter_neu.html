@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Neuer Mitarbeiter</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div id="sidebar" class="sidebar">
+        <a href="#" class="closebtn" onclick="toggleSidebar()">×</a>
+        <a href="{{ url_for('login') }}">Startseite</a>
+        <a href="{{ url_for('kalender') }}">Kalender</a>
+        <a href="{{ url_for('mitarbeiter_neu') }}">Neuer Mitarbeiter</a>
+        <a href="#">Passwort ändern</a>
+        <form method="POST" action="{{ url_for('logout') }}">
+            <button type="submit" class="logout-btn">Logout</button>
+        </form>
+    </div>
+
+    <!-- Hauptinhalt -->
+    <div id="main">
+        <button class="openbtn" onclick="toggleSidebar()">☰ Menü</button>
+
+        <div class="form-container">
+            <h2>Neuen Mitarbeiter anlegen</h2>
+
+            {% if msg %}
+                <p class="message">{{ msg }}</p>
+            {% endif %}
+
+            <form method="POST" action="{{ url_for('mitarbeiter_neu') }}">
+                <input type="text" name="name" placeholder="Vorname" required>
+                <input type="text" name="nachname" placeholder="Nachname" required>
+                <input type="text" name="abteilung" placeholder="Abteilung" required>
+                <input type="text" name="telefonnummer" placeholder="Telefonnummer" required>
+                <label>Beginn der Arbeit:</label>
+                <input type="date" name="gearbeitet_von" required>
+                <label>Geburtstag:</label>
+                <input type="date" name="geburtstag" required>
+                <button type="submit">Anlegen</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Sidebar Script -->
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById("sidebar");
+            const main = document.getElementById("main");
+            if (sidebar.style.width === "250px") {
+                sidebar.style.width = "0";
+                main.style.marginLeft = "0";
+            } else {
+                sidebar.style.width = "250px";
+                main.style.marginLeft = "250px";
+            }
+        }
+    </script>
+</body>
+</html>
