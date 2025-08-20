@@ -1,60 +1,61 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <title>Mitarbeiter bearbeiten</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta charset="UTF-8">
+  <title>Mitarbeiter bearbeiten</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    .actions { display: flex; gap: 10px; justify-content: center; margin-top: 12px; }
+    .btn-link-as-button {
+      display: inline-block; text-decoration: none; padding: 12px 16px; border-radius: 8px;
+      background: #0078D7; color: #fff; font-size: 16px;
+    }
+    .btn-link-as-button:hover { background: #005a9e; }
+  </style>
 </head>
 <body>
+  <div id="sidebar" class="sidebar">
+    <a href="#" class="closebtn" onclick="toggleSidebar()">×</a>
+    <a href="{{ url_for('login') }}">Startseite</a>
+    <a href="{{ url_for('kalender') }}">Kalender</a>
+    <a href="{{ url_for('mitarbeiter_neu') }}">Neuer Mitarbeiter</a>
+    <a href="{{ url_for('mitarbeiter') }}">Mitarbeiter-Suche</a>
+    <a href="#">Passwort ändern</a>
+    <form method="POST" action="{{ url_for('logout') }}">
+      <button type="submit" class="logout-btn">Logout</button>
+    </form>
+  </div>
 
-    <!-- Sidebar -->
-    <div id="sidebar" class="sidebar">
-        <a href="#" class="closebtn" onclick="toggleSidebar()">×</a>
-        <a href="{{ url_for('login') }}">Startseite</a>
-        <a href="{{ url_for('kalender') }}">Kalender</a>
-        <a href="{{ url_for('mitarbeiter_neu') }}">Neuer Mitarbeiter</a>
-        <a href="{{ url_for('mitarbeiter') }}">Mitarbeiter-Suche</a>
-        <a href="#">Passwort ändern</a>
-        <form method="POST" action="{{ url_for('logout') }}">
-            <button type="submit" class="logout-btn">Logout</button>
-        </form>
-    </div>
+  <div id="main">
+    <button class="openbtn" onclick="toggleSidebar()">☰ Menü</button>
 
-    <!-- Hauptinhalt -->
-    <div id="main">
-        <button class="openbtn" onclick="toggleSidebar()">☰ Menü</button>
+    <div class="form-container">
+      <h2>Mitarbeiter bearbeiten</h2>
 
-        <div class="form-container">
-            <h2>Mitarbeiter bearbeiten</h2>
+      {% if msg %}<p class="message">{{ msg }}</p>{% endif %}
 
-            {% if msg %}
-                <p class="message">{{ msg }}</p>
-            {% endif %}
+      <!-- Stammdaten speichern (POST) -->
+      <form method="POST">
+        <input type="text" name="name" value="{{ daten.name }}" required>
+        <input type="text" name="nachname" value="{{ daten.nachname }}" required>
+        <input type="text" name="abteilung" value="{{ daten.abteilung }}" required>
+        <input type="text" name="telefonnummer" value="{{ daten.telefonnummer }}" required>
+        <label>Geburtstag:</label>
+        <input type="date" name="geburtstag" value="{{ daten.geburtstag }}" required>
 
-            <form method="POST">
-                <input type="text" name="name" value="{{ daten.name }}" required>
-                <input type="text" name="nachname" value="{{ daten.nachname }}" required>
-                <input type="text" name="abteilung" value="{{ daten.abteilung }}" required>
-                <input type="text" name="telefonnummer" value="{{ daten.telefonnummer }}" required>
-                <label>Geburtstag:</label>
-                <input type="date" name="geburtstag" value="{{ daten.geburtstag }}" required>
-                <button type="submit">Speichern</button>
-            </form>
+        <div class="actions">
+          <button type="submit">Speichern</button>
+          <!-- Onboarding durchführen (GET als Link im Button-Style) -->
+          <a class="btn-link-as-button" href="{{ url_for('onboarding', id=daten.id) }}">
+            Onboarding durchführen
+          </a>
         </div>
+      </form>
     </div>
+  </div>
 
-    <script>
-        function toggleSidebar() {
-            const sidebar = document.getElementById("sidebar");
-            const main = document.getElementById("main");
-            if (sidebar.style.width === "250px") {
-                sidebar.style.width = "0";
-                main.style.marginLeft = "0";
-            } else {
-                sidebar.style.width = "250px";
-                main.style.marginLeft = "250px";
-            }
-        }
-    </script>
+  <script>
+    function toggleSidebar(){const s=document.getElementById("sidebar"),m=document.getElementById("main");if(s.style.width==="250px"){s.style.width="0";m.style.marginLeft="0"}else{s.style.width="250px";m.style.marginLeft="250px"}}
+  </script>
 </body>
 </html>

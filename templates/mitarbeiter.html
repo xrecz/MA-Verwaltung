@@ -1,81 +1,69 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <title>Mitarbeiter-Suche</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta charset="UTF-8">
+  <title>Mitarbeiter-Suche</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+  <div id="sidebar" class="sidebar">
+    <a href="#" class="closebtn" onclick="toggleSidebar()">×</a>
+    <a href="{{ url_for('login') }}">Startseite</a>
+    <a href="{{ url_for('kalender') }}">Kalender</a>
+    <a href="{{ url_for('mitarbeiter_neu') }}">Neuer Mitarbeiter</a>
+    <a href="{{ url_for('mitarbeiter') }}">Mitarbeiter-Suche</a>
+    <a href="#">Passwort ändern</a>
+    <form method="POST" action="{{ url_for('logout') }}">
+      <button type="submit" class="logout-btn">Logout</button>
+    </form>
+  </div>
 
-    <!-- Sidebar -->
-    <div id="sidebar" class="sidebar">
-        <a href="#" class="closebtn" onclick="toggleSidebar()">×</a>
-        <a href="{{ url_for('login') }}">Startseite</a>
-        <a href="{{ url_for('kalender') }}">Kalender</a>
-        <a href="{{ url_for('mitarbeiter_neu') }}">Neuer Mitarbeiter</a>
-        <a href="{{ url_for('mitarbeiter') }}">Mitarbeiter-Suche</a>
-        <a href="#">Passwort ändern</a>
-        <form method="POST" action="{{ url_for('logout') }}">
-            <button type="submit" class="logout-btn">Logout</button>
-        </form>
+  <div id="main">
+    <button class="openbtn" onclick="toggleSidebar()">☰ Menü</button>
+
+    <div class="form-container">
+      <h2>Mitarbeiter suchen</h2>
+
+      {% if msg %}<p class="message">{{ msg }}</p>{% endif %}
+
+      <!-- Suchformular -->
+      <form method="POST" action="{{ url_for('mitarbeiter') }}">
+        <input type="text" name="name" placeholder="Vorname" required>
+        <input type="text" name="nachname" placeholder="Nachname" required>
+        <button type="submit">Suchen</button>
+      </form>
     </div>
 
-    <!-- Hauptinhalt -->
-    <div id="main">
-        <button class="openbtn" onclick="toggleSidebar()">☰ Menü</button>
+    {% if daten %}
+    <div class="kalender-container">
+      <h2>Gefundener Mitarbeiter</h2>
+      <table>
+        <tr><th>ID</th><td>{{ daten.id }}</td></tr>
+        <tr><th>Vorname</th><td>{{ daten.name }}</td></tr>
+        <tr><th>Nachname</th><td>{{ daten.nachname }}</td></tr>
+        <tr><th>Abteilung</th><td>{{ daten.abteilung }}</td></tr>
+        <tr><th>Email</th><td>{{ daten.email }}</td></tr>
+        <tr><th>Telefonnummer</th><td>{{ daten.telefonnummer }}</td></tr>
+        <tr><th>Beginn Arbeit</th><td>{{ daten.beginn_arbeit }}</td></tr>
+        <tr><th>Geburtstag</th><td>{{ daten.geburtstag }}</td></tr>
+        <tr><th>Garbeitet bis</th><td>{{ daten.gearbeitet_bis }}</td></tr>
+      </table>
 
-        <div class="form-container">
-            <h2>Mitarbeiter suchen</h2>
+      <!-- Ändern-Button -->
+      <form method="GET" action="{{ url_for('mitarbeiter_edit', id=daten.id) }}">
+        <button type="submit">Ändern</button>
+      </form>
 
-            {% if msg %}
-                <p class="message">{{ msg }}</p>
-            {% endif %}
-
-            <!-- Suchformular -->
-            <form method="POST" action="{{ url_for('mitarbeiter') }}">
-                <input type="text" name="name" placeholder="Vorname" required>
-                <input type="text" name="nachname" placeholder="Nachname" required>
-                <button type="submit">Suchen</button>
-            </form>
-        </div>
-
-        <!-- Ergebnis anzeigen -->
-        {% if daten %}
-        <div class="kalender-container">
-            <h2>Gefundener Mitarbeiter</h2>
-            <table>
-                <tr><th>ID</th><td>{{ daten.id }}</td></tr>
-                <tr><th>Vorname</th><td>{{ daten.name }}</td></tr>
-                <tr><th>Nachname</th><td>{{ daten.nachname }}</td></tr>
-                <tr><th>Abteilung</th><td>{{ daten.abteilung }}</td></tr>
-                <tr><th>Email</th><td>{{ daten.email }}</td></tr>
-                <tr><th>Telefonnummer</th><td>{{ daten.telefonnummer }}</td></tr>
-                <tr><th>Beginn Arbeit</th><td>{{ daten.beginn_arbeit }}</td></tr>
-                <tr><th>Geburtstag</th><td>{{ daten.geburtstag }}</td></tr>
-                <tr><th>Garbeitet bis</th><td>{{ daten.gearbeitet_bis }}</td></tr>
-            </table>
-
-            <!-- Ändern-Button -->
-            <form method="GET" action="{{ url_for('mitarbeiter_edit', id=daten.id) }}">
-                <button type="submit">Ändern</button>
-            </form>
-        </div>
-        {% endif %}
+      <!-- Optional: Onboarding direkt von der Suche starten -->
+      <form method="GET" action="{{ url_for('onboarding', id=daten.id) }}" style="margin-top:8px">
+        <button type="submit">Onboarding durchführen</button>
+      </form>
     </div>
+    {% endif %}
+  </div>
 
-    <!-- Sidebar Script -->
-    <script>
-        function toggleSidebar() {
-            const sidebar = document.getElementById("sidebar");
-            const main = document.getElementById("main");
-            if (sidebar.style.width === "250px") {
-                sidebar.style.width = "0";
-                main.style.marginLeft = "0";
-            } else {
-                sidebar.style.width = "250px";
-                main.style.marginLeft = "250px";
-            }
-        }
-    </script>
+  <script>
+    function toggleSidebar(){const s=document.getElementById("sidebar"),m=document.getElementById("main");if(s.style.width==="250px"){s.style.width="0";m.style.marginLeft="0"}else{s.style.width="250px";m.style.marginLeft="250px"}}
+  </script>
 </body>
 </html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title>Onboarding für {{ mit.name }} {{ mit.nachname }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <div id="sidebar" class="sidebar">
+    <a href="#" class="closebtn" onclick="toggleSidebar()">×</a>
+    <a href="{{ url_for('login') }}">Startseite</a>
+    <a href="{{ url_for('kalender') }}">Kalender</a>
+    <a href="{{ url_for('mitarbeiter_neu') }}">Neuer Mitarbeiter</a>
+    <a href="{{ url_for('mitarbeiter') }}">Mitarbeiter-Suche</a>
+    <a href="#">Passwort ändern</a>
+    <form method="POST" action="{{ url_for('logout') }}">
+      <button type="submit" class="logout-btn">Logout</button>
+    </form>
+  </div>
+
+  <div id="main">
+    <button class="openbtn" onclick="toggleSidebar()">☰ Menü</button>
+
+    <div class="form-container">
+      <h2>Onboarding: {{ mit.name }} {{ mit.nachname }} (Abteilung: {{ mit.abteilung }})</h2>
+
+      {% if msg %}
+        <p class="message">{{ msg }}</p>
+      {% endif %}
+
+      <form method="POST">
+        {% if mit.abteilung in ["Lager", "Werkstatt"] %}
+          <!-- Lager / Werkstatt -->
+          <label>Welche Kleidung wird benötigt?</label>
+          <textarea name="kleidung_text" rows="3">{{ onb.kleidung_text if onb else "" }}</textarea>
+
+          <label>Größe</label>
+          <select name="kleidung_groesse">
+            {% set sizes = ["S","M","L","XL","XXL","3XL","4XL"] %}
+            <option value="">Bitte wählen</option>
+            {% for s in sizes %}
+              <option value="{{ s }}" {% if onb and onb.kleidung_groesse==s %}selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+          </select>
+
+          <label>Dokumente (Mehrfachauswahl)</label>
+          {% set docs = ["Staplerschein","LKW-Führerschein","ADR-Schein"] %}
+          <select name="dokumente" multiple size="4">
+            {% set sel_docs = [] %}
+            {% if onb and onb.dokumente %}
+              {% set sel_docs = (onb.dokumente | safe) %}
+            {% endif %}
+            {# Hinweis: Wenn Jinja das JSON nicht direkt als Liste rendert, kannst du serverseitig json.loads(onb["dokumente"]) anwenden und als onb_docs übergeben #}
+            {% for d in docs %}
+              <option value="{{ d }}">{{ d }}</option>
+            {% endfor %}
+          </select>
+
+        {% else %}
+          <!-- Büro / IT -->
+          <label>Arbeitsplatz vorhanden/aufgebaut?</label>
+          <select name="arbeitsplatz_aufgebaut">
+            <option value="0" {% if onb and onb.arbeitsplatz_aufgebaut==0 %}selected{% endif %}>Nein</option>
+            <option value="1" {% if onb and onb.arbeitsplatz_aufgebaut==1 %}selected{% endif %}>Ja</option>
+          </select>
+
+          <label>Arbeitsplatzart</label>
+          <select name="arbeitsplatz_art">
+            <option value="">Bitte wählen</option>
+            <option value="Laptop" {% if onb and onb.arbeitsplatz_art=='Laptop' %}selected{% endif %}>Laptop</option>
+            <option value="PC" {% if onb and onb.arbeitsplatz_art=='PC' %}selected{% endif %}>PC</option>
+          </select>
+
+          <label>Telefonnummer</label>
+          <input type="text" name="telefonnummer" value="{{ onb.telefonnummer if onb else '' }}"/>
+
+          <fieldset style="text-align:left">
+            <legend>Programme (Mehrfachauswahl)</legend>
+            {% set progs = ["Dilos","AC-Client","Cargobase","Coglas"] %}
+            {% set sel = [] %}
+            {# wie oben: ggf. serverseitig json.loads(onb["programme"]) zu onb_progs #}
+            {% for p in progs %}
+              <label style="display:block">
+                <input type="checkbox" name="programme" value="{{ p }}"> {{ p }}
+              </label>
+            {% endfor %}
+          </fieldset>
+
+          <label>Homeoffice</label>
+          <select name="homeoffice">
+            <option value="0" {% if onb and onb.homeoffice==0 %}selected{% endif %}>Nein</option>
+            <option value="1" {% if onb and onb.homeoffice==1 %}selected{% endif %}>Ja</option>
+          </select>
+        {% endif %}
+
+        <label>Status</label>
+        <select name="abgeschlossen">
+          <option value="0" {% if onb and onb.abgeschlossen==0 %}selected{% endif %}>offen</option>
+          <option value="1" {% if onb and onb.abgeschlossen==1 %}selected{% endif %}>abgeschlossen</option>
+        </select>
+
+        <button type="submit" style="margin-top:12px">Speichern</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function toggleSidebar() {
+      const sidebar = document.getElementById("sidebar");
+      const main = document.getElementById("main");
+      if (sidebar.style.width === "250px") {
+        sidebar.style.width = "0";
+        main.style.marginLeft = "0";
+      } else {
+        sidebar.style.width = "250px";
+        main.style.marginLeft = "250px";
+      }
+    }
+  </script>
+</body>
+</html>
