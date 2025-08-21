@@ -22,6 +22,13 @@ import MySQLdb.cursors
 import json  # für Umwandlung von Python-Listen in JSON-Strings (z. B. Checkboxen)
 import re    # reguläre Ausdrücke (noch nicht genutzt, könnte z. B. für Validierung dienen)
 import os
+
+# Optional: Anbindung an Active Directory
+try:
+    from ldap3 import Server, Connection, ALL, MODIFY_REPLACE
+except Exception:  # Modul nicht installiert oder andere Importprobleme
+    Server = Connection = None
+
 from werkzeug.utils import secure_filename
 
 
@@ -51,6 +58,12 @@ app.config['UPLOAD_FOLDER'] = os.path.join(os.getcwd(), 'uploads')
 app.config['ALLOWED_EXTENSIONS'] = {'pdf', 'png', 'jpg', 'jpeg'}
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
+# Active-Directory-Konfiguration über Umgebungsvariablen
+AD_SERVER = os.getenv("AD_SERVER")
+AD_USER = os.getenv("AD_USER")
+AD_PASSWORD = os.getenv("AD_PASSWORD")
+AD_BASE_DN = os.getenv("AD_BASE_DN", "OU=Users,DC=example,DC=com")
+
 
 def allowed_file(filename):
     """Prüft, ob die Datei eine der erlaubten Endungen besitzt."""
@@ -74,6 +87,37 @@ def init_app():
 
 
 init_app()
+
+
+def create_ad_user(vorname, nachname, abteilung, email):
+    """Legt einen Benutzer im Active Directory an (falls konfiguriert)."""
+    if Server is None or not all([AD_SERVER, AD_USER, AD_PASSWORD]):
+        # Keine AD-Verbindung konfiguriert
+        return
+
+    username = (vorname[0] + nachname).lower()
+    password = f"40{vorname[0].upper()}{nachname[0].lower()}28197!"
+
+    try:
+        server = Server(AD_SERVER, get_info=ALL)
+        conn = Connection(server, user=AD_USER, password=AD_PASSWORD, auto_bind=True)
+        dn = f"CN={vorname} {nachname},{AD_BASE_DN}"
+        domain = email.split("@")[-1]
+        attributes = {
+            "givenName": vorname,
+            "sn": nachname,
+            "displayName": f"{vorname} {nachname}",
+            "mail": email,
+            "department": abteilung,
+            "sAMAccountName": username,
+            "userPrincipalName": f"{username}@{domain}",
+        }
+        conn.add(dn, ["top", "person", "organizationalPerson", "user"], attributes)
+        conn.extend.microsoft.modify_password(dn, password)
+        conn.modify(dn, {"userAccountControl": [(MODIFY_REPLACE, 512)]})
+        conn.unbind()
+    except Exception as exc:
+        print(f"AD user creation failed: {exc}")
 
 
 # ---------------------------------------------------------
@@ -191,6 +235,11 @@ def mitarbeiter_neu():
             )
             mysql.connection.commit()
             msg = "Mitarbeiter erfolgreich angelegt!"
+
+            # Automatisch AD-Benutzer anlegen, wenn Abteilung nicht ausgeschlossen ist
+            ausgeschlossene_abteilungen = {"Lager", "Werkstatt", "Fahrer", "LKW Fahrer"}
+            if abteilung not in ausgeschlossene_abteilungen:
+                create_ad_user(name, nachname, abteilung, email)
 
     return render_template("mitarbeiter_neu.html", msg=msg)
 

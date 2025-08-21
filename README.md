@@ -21,3 +21,18 @@ Zum Testen der Anwendung genügt es, das Python-Modul zu kompilieren:
 python -m py_compile app.py
 ```
 
+## Active-Directory-Benutzer
+
+Beim Anlegen eines neuen Mitarbeiters wird optional ein Benutzer im Active Directory erstellt.
+Hierzu muss das Paket `ldap3` installiert sein und folgende Umgebungsvariablen müssen gesetzt werden:
+
+- `AD_SERVER`
+- `AD_USER`
+- `AD_PASSWORD`
+- `AD_BASE_DN` (optional, Standard: `OU=Users,DC=example,DC=com`)
+
+Der Benutzername besteht aus dem ersten Buchstaben des Vornamens und dem kompletten Nachnamen
+(z. B. `mmuster`). Das initiale Passwort lautet `40` + erster Buchstabe des Vornamens (groß) + erster
+Buchstabe des Nachnamens (klein) + `28197!`.
+Ein AD-Benutzer wird nur erstellt, wenn die Abteilung nicht „Lager“, „Werkstatt“, „Fahrer“ oder „LKW Fahrer“ lautet.
+
