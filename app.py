@@ -3,7 +3,7 @@
 # ---------------------------------------------------------
 
 # Flask-Basismodule importieren
-from flask import Flask, render_template, request, url_for, session, redirect
+from flask import Flask, render_template, request, url_for, session, redirect, send_from_directory
 # -> Flask = Hauptklasse für die Web-App
 # -> render_template = lädt HTML-Dateien aus /templates
 # -> request = verarbeitet eingehende HTTP-Requests (Formulardaten, GET/POST)
@@ -21,6 +21,8 @@ import MySQLdb.cursors
 
 import json  # für Umwandlung von Python-Listen in JSON-Strings (z. B. Checkboxen)
 import re    # reguläre Ausdrücke (noch nicht genutzt, könnte z. B. für Validierung dienen)
+import os
+from werkzeug.utils import secure_filename
 
 
 # ---------------------------------------------------------
@@ -43,6 +45,35 @@ app.config['MYSQL_DB'] = 'ttma'                     # Name der Datenbank
 
 # MySQL-Objekt erstellen, das mit Flask verbunden ist
 mysql = MySQL(app)
+
+# Upload-Konfiguration
+app.config['UPLOAD_FOLDER'] = os.path.join(os.getcwd(), 'uploads')
+app.config['ALLOWED_EXTENSIONS'] = {'pdf', 'png', 'jpg', 'jpeg'}
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+
+def allowed_file(filename):
+    """Prüft, ob die Datei eine der erlaubten Endungen besitzt."""
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
+
+
+def init_app():
+    """Initialisiert Datenbankstrukturen (z. B. Tabelle für Dokumente)."""
+    cursor = mysql.connection.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS mitarbeiter_dokumente (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            mitarbeiter_id INT NOT NULL,
+            filename VARCHAR(255) NOT NULL,
+            original_name VARCHAR(255) NOT NULL,
+            uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (mitarbeiter_id) REFERENCES mitarbeiter(id)
+        )
+    """)
+    mysql.connection.commit()
+
+
+init_app()
 
 
 # ---------------------------------------------------------
@@ -218,6 +249,100 @@ def mitarbeiter_edit(id):
     daten = cursor.fetchone()
 
     return render_template("mitarbeiter_edit.html", daten=daten, msg=msg)
+
+
+# ---------------------------------------------------------
+# MITARBEITER-DOKUMENTE UPLOAD
+# ---------------------------------------------------------
+
+@app.route("/mitarbeiter_upload/<int:id>", methods=["GET", "POST"])
+def mitarbeiter_upload(id):
+    """Zeigt Dokumente eines Mitarbeiters und verarbeitet neue Uploads."""
+    if not session.get("loggedin"):
+        return redirect(url_for("login"))
+
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    msg = ""
+
+    if request.method == "POST":
+        file = request.files.get("dokument")
+        if file and allowed_file(file.filename):
+            original_name = file.filename
+            filename = secure_filename(original_name)
+            user_folder = os.path.join(app.config['UPLOAD_FOLDER'], str(id))
+            os.makedirs(user_folder, exist_ok=True)
+            file.save(os.path.join(user_folder, filename))
+
+            cursor.execute(
+                """
+                INSERT INTO mitarbeiter_dokumente (mitarbeiter_id, filename, original_name, uploaded_at)
+                VALUES (%s, %s, %s, NOW())
+                """,
+                (id, filename, original_name),
+            )
+            mysql.connection.commit()
+            msg = "Datei gespeichert."
+        else:
+            msg = "Ungültige Datei."
+
+    cursor.execute(
+        "SELECT id, original_name FROM mitarbeiter_dokumente WHERE mitarbeiter_id = %s",
+        (id,),
+    )
+    dokumente = cursor.fetchall()
+
+    return render_template(
+        "mitarbeiter_upload.html", dokumente=dokumente, mitarbeiter_id=id, msg=msg
+    )
+
+
+@app.route("/download/<int:doc_id>")
+def download(doc_id):
+    """Stellt ein gespeichertes Dokument zum Download bereit."""
+    if not session.get("loggedin"):
+        return redirect(url_for("login"))
+
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute(
+        "SELECT mitarbeiter_id, filename, original_name FROM mitarbeiter_dokumente WHERE id = %s",
+        (doc_id,),
+    )
+    doc = cursor.fetchone()
+    if not doc:
+        return "Dokument nicht gefunden", 404
+
+    folder = os.path.join(app.config['UPLOAD_FOLDER'], str(doc["mitarbeiter_id"]))
+    return send_from_directory(
+        folder, doc["filename"], as_attachment=True, download_name=doc["original_name"]
+    )
+
+
+@app.route("/delete_document/<int:doc_id>", methods=["POST"])
+def delete_document(doc_id):
+    """Löscht die Datei und den passenden Datenbankeintrag."""
+    if not session.get("loggedin"):
+        return redirect(url_for("login"))
+
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute(
+        "SELECT mitarbeiter_id, filename FROM mitarbeiter_dokumente WHERE id = %s",
+        (doc_id,),
+    )
+    doc = cursor.fetchone()
+    if doc:
+        file_path = os.path.join(
+            app.config['UPLOAD_FOLDER'], str(doc["mitarbeiter_id"]), doc["filename"]
+        )
+        if os.path.exists(file_path):
+            os.remove(file_path)
+        cursor.execute(
+            "DELETE FROM mitarbeiter_dokumente WHERE id = %s",
+            (doc_id,),
+        )
+        mysql.connection.commit()
+        return redirect(url_for("mitarbeiter_upload", id=doc["mitarbeiter_id"]))
+
+    return redirect(url_for("landing"))
 
 
 # ---------------------------------------------------------
