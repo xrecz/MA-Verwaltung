@@ -3,12 +3,13 @@
 # ---------------------------------------------------------
 
 # Flask-Basismodule importieren
-from flask import Flask, render_template, request, url_for, session
+from flask import Flask, render_template, request, url_for, session, redirect
 # -> Flask = Hauptklasse für die Web-App
 # -> render_template = lädt HTML-Dateien aus /templates
 # -> request = verarbeitet eingehende HTTP-Requests (Formulardaten, GET/POST)
 # -> url_for = baut dynamisch URLs auf Basis von Routen
 # -> session = speichert Informationen über eingeloggte Nutzer zwischen Requests (Cookies)
+# -> redirect = leitet den Nutzer auf eine andere Route weiter
 
 # Flask-MySQLdb für die Verbindung zu MySQL importieren
 from flask_mysqldb import MySQL
@@ -53,6 +54,10 @@ mysql = MySQL(app)
 def login():
     msg = ""  # Variable für Rückmeldungen (z. B. Fehlermeldungen, Infos)
 
+    # Wenn bereits eingeloggt → direkt zur Startseite
+    if session.get("loggedin"):
+        return redirect(url_for("landing"))
+
     # Prüfen, ob ein Formular per POST geschickt wurde UND ob Username & Passwort-Felder ausgefüllt sind
     if request.method == 'POST' and 'username' in request.form and 'password' in request.form:
 
@@ -75,12 +80,23 @@ def login():
             session["loggedin"] = True
             session["id"] = account["id"]
             session["username"] = account["benutzername"]
-            return render_template("landing.html", msg="Logged in!")
+            return redirect(url_for("landing"))
         else:
             msg = "Falscher Benutzername oder Passwort!"
 
     # GET-Anfrage oder Login fehlgeschlagen → Login-Seite anzeigen
     return render_template("login.html", msg=msg)
+
+
+# ---------------------------------------------------------
+# LANDINGPAGE / STARTSEITE
+# ---------------------------------------------------------
+
+@app.route("/landing")
+def landing():
+    if session.get("loggedin"):
+        return render_template("landing.html")
+    return redirect(url_for("login"))
 
 
 # ---------------------------------------------------------
