@@ -70,6 +70,13 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
 
+def get_user_folder(user_id):
+    """Ermittelt den Ordner für die Dokumente eines Mitarbeiters und legt ihn an."""
+    folder = os.path.join(app.config['UPLOAD_FOLDER'], str(user_id))
+    os.makedirs(folder, exist_ok=True)
+    return folder
+
+
 def init_app():
     """Initialisiert Datenbankstrukturen (z. B. Tabelle für Dokumente)."""
     cursor = mysql.connection.cursor()
@@ -316,8 +323,7 @@ def mitarbeiter_upload(id):
         if file and allowed_file(file.filename):
             original_name = file.filename
             filename = secure_filename(original_name)
-            user_folder = os.path.join(app.config['UPLOAD_FOLDER'], str(id))
-            os.makedirs(user_folder, exist_ok=True)
+            user_folder = get_user_folder(id)
             file.save(os.path.join(user_folder, filename))
 
             cursor.execute(
@@ -358,7 +364,7 @@ def download(doc_id):
     if not doc:
         return "Dokument nicht gefunden", 404
 
-    folder = os.path.join(app.config['UPLOAD_FOLDER'], str(doc["mitarbeiter_id"]))
+    folder = get_user_folder(doc["mitarbeiter_id"])
     return send_from_directory(
         folder, doc["filename"], as_attachment=True, download_name=doc["original_name"]
     )
@@ -377,9 +383,8 @@ def delete_document(doc_id):
     )
     doc = cursor.fetchone()
     if doc:
-        file_path = os.path.join(
-            app.config['UPLOAD_FOLDER'], str(doc["mitarbeiter_id"]), doc["filename"]
-        )
+        folder = get_user_folder(doc["mitarbeiter_id"])
+        file_path = os.path.join(folder, doc["filename"])
         if os.path.exists(file_path):
             os.remove(file_path)
         cursor.execute(
