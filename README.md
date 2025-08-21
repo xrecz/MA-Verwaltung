@@ -35,4 +35,3 @@ Der Benutzername besteht aus dem ersten Buchstaben des Vornamens und dem komplet
 (z. B. `mmuster`). Das initiale Passwort lautet `40` + erster Buchstabe des Vornamens (groß) + erster
 Buchstabe des Nachnamens (klein) + `28197!`.
 Ein AD-Benutzer wird nur erstellt, wenn die Abteilung nicht „Lager“, „Werkstatt“, „Fahrer“ oder „LKW Fahrer“ lautet.
-
