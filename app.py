@@ -82,7 +82,9 @@ def logout():
 @app.route("/Kalender")
 def kalender():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    cursor.execute("SELECT name, geburtstag FROM mitarbeiter ORDER BY DAY(geburtstag), MONTH(geburtstag)")
+    cursor.execute(
+        "SELECT name, geburtstag FROM mitarbeiter ORDER BY MONTH(geburtstag), DAY(geburtstag)"
+    )
     birthdays = cursor.fetchall()
     return render_template("kalender.html",  birthdays = birthdays)
 
