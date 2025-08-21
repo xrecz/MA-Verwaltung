@@ -54,6 +54,7 @@ app.config['MYSQL_DB'] = 'ttma'                     # Name der Datenbank
 mysql = MySQL(app)
 
 # Upload-Konfiguration
+app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'uploads')
 app.config['ALLOWED_EXTENSIONS'] = {'pdf', 'png', 'jpg', 'jpeg'}
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
