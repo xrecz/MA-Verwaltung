@@ -28,6 +28,7 @@ try:
     from ldap3 import Server, Connection, ALL, MODIFY_REPLACE
 except Exception:  # Modul nicht installiert oder andere Importprobleme
     Server = Connection = None
+
 from werkzeug.utils import secure_filename
 
 
@@ -53,8 +54,6 @@ app.config['MYSQL_DB'] = 'ttma'                     # Name der Datenbank
 mysql = MySQL(app)
 
 # Upload-Konfiguration
-# Dateien werden relativ zum Projektordner im Unterverzeichnis "uploads/" gespeichert
-app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'uploads')
 app.config['ALLOWED_EXTENSIONS'] = {'pdf', 'png', 'jpg', 'jpeg'}
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
@@ -63,6 +62,7 @@ AD_SERVER = os.getenv("AD_SERVER")
 AD_USER = os.getenv("AD_USER")
 AD_PASSWORD = os.getenv("AD_PASSWORD")
 AD_BASE_DN = os.getenv("AD_BASE_DN", "OU=Users,DC=example,DC=com")
+
 
 def allowed_file(filename):
     """Prüft, ob die Datei eine der erlaubten Endungen besitzt."""
@@ -84,11 +84,6 @@ def init_app():
     """)
     mysql.connection.commit()
 
-
-# Datenbanktabellen erst nach dem Anlegen des Application Contexts erzeugen,
-# sonst wirft Flask beim Start "Working outside of application context".
-with app.app_context():
-    init_app()
 
 
 def create_ad_user(vorname, nachname, abteilung, email):
